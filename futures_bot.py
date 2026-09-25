@@ -202,8 +202,9 @@ def main():
                 if nan_count > 0:
                     continue
                     
-                prob = predictor.predict_latest(df)
-                action = decide_scalp(prob)
+                prob = predictor.predict(df)
+                has_pos = (pos is not None)
+                action = decide_scalp(prob, current_price, has_open_position=has_pos)
                 
                 print(f"[{now.strftime('%H:%M:%S')}] Price: ${current_price:.2f} | Prob: {prob:.4f} | Action: {action} | Balance: ${engine.get_balance():.2f}")
                 
