@@ -198,10 +198,10 @@ def main():
                     roi = ((current_price - pos["entry_price"]) / pos["entry_price"]) * LEVERAGE * 100
                     
                     exit_reason = None
-                    if roi <= -10.0:
-                        exit_reason = "Stop Loss (-10% ROI)"
-                    elif roi >= 15.0:
-                        exit_reason = "Take Profit (+15% ROI)"
+                    if roi <= -1.5:
+                        exit_reason = "Stop Loss (-1.5% ROI)"
+                    elif roi >= 3.0:
+                        exit_reason = "Take Profit (+3.0% ROI)"
                     elif minutes_held >= 5:
                         exit_reason = "Max Hold Time Reached (5m)"
                         
@@ -229,10 +229,11 @@ def main():
                 has_pos = (pos is not None)
                 action = decide_scalp(prob, current_price, has_open_position=has_pos)
                 
-                print(f"[{now.strftime('%H:%M:%S')}] Price: ${current_price:.2f} | Prob: {prob:.4f} | Action: {action} | Balance: ${engine.get_balance():.2f}")
+                action_str = action.get("action", "HOLD")
+                print(f"[{now.strftime('%H:%M:%S')}] Price: ${current_price:.2f} | Prob: {prob:.4f} | Action: {action_str} | Balance: ${engine.get_balance():.2f}")
                 
                 # 4. Open Position
-                if action == "BUY" and pos is None:
+                if action_str == "BUY" and pos is None:
                     new_pos, fee = engine.open_long(current_price)
                     msg = (f"🚀 <b>LONG OPENED</b>\n"
                            f"Price: ${current_price:.2f}\n"
