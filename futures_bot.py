@@ -25,7 +25,29 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
 # ─── Telegram Alerts ─────────────────────────────────────────────
-def send_telegram_message(message: str):
+def send_telegram_message(message: str, engine=None):
+    if engine is not None:
+        balance = engine.get_balance()
+        total_pnl = balance - 10000.0
+        
+        # Calculate daily PnL
+        now_date = datetime.now(timezone.utc).date()
+        daily_pnl = 0.0
+        for t in engine.state["trades"]:
+            try:
+                trade_date = datetime.fromisoformat(t["exit_time"]).date()
+                if trade_date == now_date:
+                    daily_pnl += t.get("net_pnl", 0.0)
+            except:
+                pass
+                
+        footer = (
+            f"\n\n💰 <b>Balance:</b> ${balance:,.2f}\n"
+            f"📈 <b>Daily PnL:</b> ${daily_pnl:+,.2f}\n"
+            f"📊 <b>Total PnL:</b> ${total_pnl:+,.2f}"
+        )
+        message += footer
+
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         print("[WARN] Telegram credentials not set. Message:", message)
         return
@@ -147,11 +169,12 @@ def get_current_price(exchange):
 # ─── Main Loop ───────────────────────────────────────────────────
 def main():
     print("Starting Paper Trading Simulator (1m Scalper, 10x Leverage)...")
-    send_telegram_message("⚡ <b>FUTURES PAPER TRADER STARTED</b>\nExchange: Local Simulator\nLeverage: 10x")
     
     # Use public Binance API for free live price data (no keys needed!)
     exchange = ccxt.binance({"enableRateLimit": True})
     engine = PaperTradingEngine(initial_balance=10000.0)
+    
+    send_telegram_message("⚡ <b>FUTURES PAPER TRADER STARTED</b>\nExchange: Local Simulator\nLeverage: 10x", engine)
     predictor = ScalpPredictor()
     
     last_processed_minute = None
@@ -191,7 +214,7 @@ def main():
                                f"Net PnL: ${trade['net_pnl']:.2f} ({trade['roi_pct']}%)\n"
                                f"New Balance: ${trade['new_balance']:.2f}")
                         print(msg)
-                        send_telegram_message(msg)
+                        send_telegram_message(msg, engine)
                         continue # Skip ML evaluation for this minute since we just closed
 
                 # 3. Fetch data & ML prediction
@@ -218,7 +241,7 @@ def main():
                            f"ML Confidence: {prob*100:.1f}%\n"
                            f"Fee Deducted: ${fee:.2f}")
                     print(msg)
-                    send_telegram_message(msg)
+                    send_telegram_message(msg, engine)
 
         except Exception as e:
             print(f"[ERROR] Main loop error: {e}")
