@@ -170,8 +170,8 @@ def get_current_price(exchange):
 def main():
     print("Starting Paper Trading Simulator (1m Scalper, 10x Leverage)...")
     
-    # Use public Binance API for free live price data (no keys needed!)
-    exchange = ccxt.binance({"enableRateLimit": True})
+    # Use public Bybit API for free live price data to avoid Binance's shared IP bans on Render!
+    exchange = ccxt.bybit({"enableRateLimit": True})
     engine = PaperTradingEngine(initial_balance=10000.0)
     
     send_telegram_message("⚡ <b>FUTURES PAPER TRADER STARTED</b>\nExchange: Local Simulator\nLeverage: 10x", engine)
