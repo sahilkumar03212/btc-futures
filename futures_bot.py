@@ -1,5 +1,5 @@
 """
-BTC/USDT 1m Scalper — BINANCE FUTURES (LEVERAGED)
+BTC/USDT 1m Scalper — BYBIT FUTURES (LEVERAGED)
 """
 import os
 import sys
@@ -51,11 +51,11 @@ def send_telegram(text: str):
 
 # ─── Exchange Setup ──────────────────────────────────────────────
 def get_exchange():
-    exchange = ccxt.binance({
+    exchange = ccxt.bybit({
         "apiKey": FUTURES_TESTNET_API_KEY,
         "secret": FUTURES_TESTNET_API_SECRET,
         "enableRateLimit": True,
-        "options": {"defaultType": "future"},
+        "options": {"defaultType": "swap"},  # Bybit uses 'swap' for USDT Perpetuals
     })
     exchange.set_sandbox_mode(True)
     
@@ -63,9 +63,9 @@ def get_exchange():
     try:
         exchange.load_markets()
         exchange.set_leverage(LEVERAGE, SYMBOL)
-        print(f"[SETUP] Leverage successfully set to {LEVERAGE}x")
+        print(f"[SETUP] Leverage successfully set to {LEVERAGE}x on Bybit")
     except Exception as e:
-        print(f"[WARN] Could not set leverage (might already be set): {e}")
+        print(f"[WARN] Could not set leverage on Bybit (might already be set): {e}")
         
     return exchange
 
